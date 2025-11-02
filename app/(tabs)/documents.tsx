@@ -88,7 +88,11 @@ export default function DocumentsScreen() {
   };
 
   const handleAddDocument = () => {
+    console.log('[DocumentsScreen] handleAddDocument iniciado');
+    console.log('[DocumentsScreen] newDocument:', newDocument);
+    
     if (!newDocument.title.trim() || !newDocument.caseId) {
+      console.log('[DocumentsScreen] Validação falhou - título ou caseId vazio');
       Alert.alert("Erro", "Por favor, preencha o título e selecione um processo.");
       return;
     }
@@ -98,18 +102,20 @@ export default function DocumentsScreen() {
       .map(t => t.trim())
       .filter(t => t.length > 0);
 
+    const documentData = {
+      ...newDocument,
+      tags: tags.length > 0 ? tags : undefined,
+      clientId: newDocument.clientId || undefined,
+    };
+
+    console.log('[DocumentsScreen] Dados do documento a adicionar:', documentData);
+
     if (editingDocument) {
-      updateDocument(editingDocument.id, {
-        ...newDocument,
-        tags: tags.length > 0 ? tags : undefined,
-        clientId: newDocument.clientId || undefined,
-      });
+      console.log('[DocumentsScreen] Modo edição - atualizando documento:', editingDocument.id);
+      updateDocument(editingDocument.id, documentData);
     } else {
-      addDocument({
-        ...newDocument,
-        tags: tags.length > 0 ? tags : undefined,
-        clientId: newDocument.clientId || undefined,
-      });
+      console.log('[DocumentsScreen] Modo adicionar - adicionando novo documento');
+      addDocument(documentData);
     }
 
     setNewDocument({
@@ -123,6 +129,7 @@ export default function DocumentsScreen() {
     });
     setEditingDocument(null);
     setShowAddModal(false);
+    console.log('[DocumentsScreen] Modal fechado e formulário resetado');
   };
 
   const handleEditDocument = (doc: Document) => {

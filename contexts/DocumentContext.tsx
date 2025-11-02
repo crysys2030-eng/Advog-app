@@ -73,6 +73,12 @@ export const [DocumentProvider, useDocuments] = createContextHook(() => {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newDocuments));
       return newDocuments;
     },
+    onSuccess: (data) => {
+      console.log('[DocumentContext] Documentos salvos com sucesso:', data.length);
+    },
+    onError: (error) => {
+      console.error('[DocumentContext] Erro ao salvar documentos:', error);
+    },
   });
 
   const { mutate: saveDocuments } = saveMutation;
@@ -90,12 +96,15 @@ export const [DocumentProvider, useDocuments] = createContextHook(() => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+    console.log('[DocumentContext] Adicionando novo documento:', documentToAdd.title);
     const updated = [...documents, documentToAdd];
     setDocuments(updated);
     saveDocuments(updated);
+    console.log('[DocumentContext] Total de documentos após adicionar:', updated.length);
   }, [documents, saveDocuments]);
 
   const updateDocument = useCallback((id: string, updates: Partial<Document>) => {
+    console.log('[DocumentContext] Atualizando documento:', id);
     const updated = documents.map((d) =>
       d.id === id ? { ...d, ...updates, updatedAt: new Date().toISOString() } : d
     );
@@ -104,9 +113,11 @@ export const [DocumentProvider, useDocuments] = createContextHook(() => {
   }, [documents, saveDocuments]);
 
   const deleteDocument = useCallback((id: string) => {
+    console.log('[DocumentContext] Eliminando documento:', id);
     const updated = documents.filter((d) => d.id !== id);
     setDocuments(updated);
     saveDocuments(updated);
+    console.log('[DocumentContext] Total de documentos após eliminar:', updated.length);
   }, [documents, saveDocuments]);
 
   const getDocumentsByCase = useCallback((caseId: string) => {
