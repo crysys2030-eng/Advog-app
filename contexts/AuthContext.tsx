@@ -7,6 +7,7 @@ interface User {
   name: string;
   email: string;
   oab: string;
+  password: string;
 }
 
 interface AuthContextType {
@@ -14,10 +15,12 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, oab: string, password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
 }
 
 const AUTH_STORAGE_KEY = '@lawyer_app_auth';
+const USERS_STORAGE_KEY = '@lawyer_app_users';
 
 export const [AuthProvider, useAuth] = createContextHook((): AuthContextType => {
   const [user, setUser] = useState<User | null>(null);
@@ -47,19 +50,61 @@ export const [AuthProvider, useAuth] = createContextHook((): AuthContextType => 
         return false;
       }
 
-      const userData: User = {
-        id: '1',
-        name: 'Dr. Advogado',
-        email: email,
-        oab: 'OAB/SP 123.456',
-      };
+      const usersStr = await AsyncStorage.getItem(USERS_STORAGE_KEY);
+      if (!usersStr) {
+        return false;
+      }
 
-      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userData));
-      setUser(userData);
+      const users: User[] = JSON.parse(usersStr);
+      const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+
+      if (!user) {
+        return false;
+      }
+
+      const { password: _, ...userWithoutPassword } = user;
+      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userWithoutPassword));
+      setUser(userWithoutPassword as User);
       return true;
     } catch (error) {
       console.error('Erro no login:', error);
       return false;
+    }
+  }, []);
+
+  const register = useCallback(async (name: string, email: string, oab: string, password: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      if (!name || !email || !oab || !password) {
+        return { success: false, message: 'Todos os campos são obrigatórios' };
+      }
+
+      if (password.length < 6) {
+        return { success: false, message: 'A senha deve ter pelo menos 6 caracteres' };
+      }
+
+      const usersStr = await AsyncStorage.getItem(USERS_STORAGE_KEY);
+      const users: User[] = usersStr ? JSON.parse(usersStr) : [];
+
+      const existingUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (existingUser) {
+        return { success: false, message: 'Email já cadastrado' };
+      }
+
+      const newUser: User = {
+        id: Date.now().toString(),
+        name,
+        email: email.toLowerCase(),
+        oab,
+        password,
+      };
+
+      users.push(newUser);
+      await AsyncStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+
+      return { success: true, message: 'Usuário criado com sucesso' };
+    } catch (error) {
+      console.error('Erro no registro:', error);
+      return { success: false, message: 'Erro ao criar usuário' };
     }
   }, []);
 
@@ -77,6 +122,7 @@ export const [AuthProvider, useAuth] = createContextHook((): AuthContextType => 
     isLoading,
     isAuthenticated: !!user,
     login,
+    register,
     logout,
-  }), [user, isLoading, login, logout]);
+  }), [user, isLoading, login, register, logout]);
 });
