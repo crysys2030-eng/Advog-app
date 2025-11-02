@@ -22,6 +22,8 @@ const Colors = {
   success: "#10b981",
   warning: "#f59e0b",
   error: "#ef4444",
+  danger: "#ef4444",
+  dangerLight: "#fee2e2",
   info: "#3b82f6",
   
   status: {

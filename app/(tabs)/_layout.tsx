@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { LayoutDashboard, FolderOpen, Sparkles, Calendar as CalendarIcon, Users, FileText } from "lucide-react-native";
+import { LayoutDashboard, FolderOpen, Sparkles, Calendar as CalendarIcon, Users, FileText, DollarSign, ListTodo } from "lucide-react-native";
 import React from "react";
 import Colors from "@/constants/colors";
 
@@ -60,6 +60,20 @@ export default function TabLayout() {
         options={{
           title: "Documentos",
           tabBarIcon: ({ color }) => <FileText size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="billing"
+        options={{
+          title: "Honorários",
+          tabBarIcon: ({ color }) => <DollarSign size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="tasks"
+        options={{
+          title: "Tarefas",
+          tabBarIcon: ({ color }) => <ListTodo size={24} color={color} />,
         }}
       />
     </Tabs>

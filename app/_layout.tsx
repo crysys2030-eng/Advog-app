@@ -7,6 +7,8 @@ import { CaseProvider } from "@/contexts/CaseContext";
 import { ClientProvider } from "@/contexts/ClientContext";
 import { DocumentProvider } from "@/contexts/DocumentContext";
 import { EventProvider } from "@/contexts/EventContext";
+import { BillingProvider } from "@/contexts/BillingContext";
+import { TaskProvider } from "@/contexts/TaskContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -31,9 +33,13 @@ export default function RootLayout() {
         <ClientProvider>
           <DocumentProvider>
             <EventProvider>
-              <GestureHandlerRootView style={{ flex: 1 }}>
-                <RootLayoutNav />
-              </GestureHandlerRootView>
+              <BillingProvider>
+                <TaskProvider>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <RootLayoutNav />
+                  </GestureHandlerRootView>
+                </TaskProvider>
+              </BillingProvider>
             </EventProvider>
           </DocumentProvider>
         </ClientProvider>
