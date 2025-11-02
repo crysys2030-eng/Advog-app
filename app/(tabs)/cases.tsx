@@ -125,7 +125,7 @@ export default function CasesScreen() {
           <View style={styles.casesList}>
             {filteredCases.map((caseItem) => (
               <View key={caseItem.id} style={styles.caseCardWrapper}>
-                  <TouchableOpacity style={styles.caseCard}>
+                  <View style={styles.caseCard}>
                   <View style={styles.caseHeader}>
                     <View
                       style={[
@@ -163,7 +163,7 @@ export default function CasesScreen() {
                         </Text>
                       </View>
                     )}
-                  </TouchableOpacity>
+                  </View>
                 <TouchableOpacity
                   style={styles.editButton}
                   onPress={() => handleEditCase(caseItem)}

@@ -167,7 +167,7 @@ export default function ClientsScreen() {
           <View style={styles.clientsList}>
             {filteredClients.map((client) => (
               <View key={client.id} style={styles.clientCardWrapper}>
-                <TouchableOpacity style={styles.clientCard}>
+                <View style={styles.clientCard}>
                   <View style={styles.clientHeader}>
                     <View style={styles.clientIcon}>
                       {client.type === "company" ? (
@@ -218,7 +218,7 @@ export default function ClientsScreen() {
                       </Text>
                     </View>
                   )}
-                </TouchableOpacity>
+                </View>
                 <TouchableOpacity
                   style={styles.editButton}
                   onPress={() => handleEditClient(client)}

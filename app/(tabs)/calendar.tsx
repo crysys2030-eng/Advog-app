@@ -371,7 +371,6 @@ export default function CalendarScreen() {
                                 )}
                               </View>
                             </View>
-                          </View>
                           <TouchableOpacity
                             style={styles.deleteButton}
                             onPress={() => handleDeleteEvent(event.id, event.title)}
@@ -379,6 +378,7 @@ export default function CalendarScreen() {
                           >
                             <Trash2 size={16} color={Colors.error} />
                           </TouchableOpacity>
+                          </View>
                         </View>
                       ))}
                     </View>
@@ -455,9 +455,7 @@ export default function CalendarScreen() {
                             {deadline.notes && (
                               <Text style={styles.notes}>{deadline.notes}</Text>
                             )}
-                          </View>
-                        </View>
-                        <TouchableOpacity
+                          <TouchableOpacity
                           style={styles.deleteButton}
                           onPress={() =>
                             handleDeleteDeadline(deadline.caseId, deadline.id, deadline.title)
@@ -466,6 +464,8 @@ export default function CalendarScreen() {
                         >
                           <Trash2 size={16} color={Colors.error} />
                         </TouchableOpacity>
+                          </View>
+                        </View>
                       </View>
                     ))}
                   </View>

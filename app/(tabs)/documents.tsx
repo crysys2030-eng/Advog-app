@@ -213,7 +213,7 @@ export default function DocumentsScreen() {
           <View style={styles.documentsList}>
             {filteredDocuments.map((doc) => (
               <View key={doc.id} style={styles.documentCardWrapper}>
-                <TouchableOpacity style={styles.documentCard}>
+                <View style={styles.documentCard}>
                   <View style={styles.documentHeader}>
                     <View 
                       style={[
@@ -271,7 +271,7 @@ export default function DocumentsScreen() {
                       ))}
                     </View>
                   )}
-                </TouchableOpacity>
+                </View>
                 <TouchableOpacity
                   style={styles.editButton}
                   onPress={() => handleEditDocument(doc)}
