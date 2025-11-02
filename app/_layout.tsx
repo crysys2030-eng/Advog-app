@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CaseProvider } from "@/contexts/CaseContext";
 import { ClientProvider } from "@/contexts/ClientContext";
 import { DocumentProvider } from "@/contexts/DocumentContext";
+import { EventProvider } from "@/contexts/EventContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -29,9 +30,11 @@ export default function RootLayout() {
       <CaseProvider>
         <ClientProvider>
           <DocumentProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <RootLayoutNav />
-            </GestureHandlerRootView>
+            <EventProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <RootLayoutNav />
+              </GestureHandlerRootView>
+            </EventProvider>
           </DocumentProvider>
         </ClientProvider>
       </CaseProvider>
