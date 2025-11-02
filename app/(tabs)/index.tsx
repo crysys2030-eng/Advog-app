@@ -1,12 +1,33 @@
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { useCases, useUpcomingDeadlines } from "@/contexts/CaseContext";
 import Colors from "@/constants/colors";
-import { Briefcase, Clock, AlertTriangle, CheckCircle2, TrendingUp } from "lucide-react-native";
-import { Link } from "expo-router";
+import { Briefcase, Clock, AlertTriangle, CheckCircle2, TrendingUp, LogOut, User } from "lucide-react-native";
+import { Link, useRouter } from "expo-router";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function DashboardScreen() {
   const { stats, cases } = useCases();
   const upcomingDeadlines = useUpcomingDeadlines(7);
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Sair',
+      'Tem certeza que deseja sair?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sair',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/login');
+          },
+        },
+      ]
+    );
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -26,8 +47,21 @@ export default function DashboardScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Dashboard</Text>
-        <Text style={styles.subtitle}>Visão geral dos seus processos</Text>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.title}>Dashboard</Text>
+            <Text style={styles.subtitle}>Visão geral dos seus processos</Text>
+          </View>
+          <View style={styles.userSection}>
+            <View style={styles.userInfo}>
+              <User size={16} color={Colors.text.secondary} />
+              <Text style={styles.userName} numberOfLines={1}>{user?.name}</Text>
+            </View>
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+              <LogOut size={20} color={Colors.status.urgent} />
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
 
       <View style={styles.statsGrid}>
@@ -137,6 +171,33 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 24,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 16,
+  },
+  userSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    maxWidth: 120,
+  },
+  userName: {
+    fontSize: 14,
+    color: Colors.text.secondary,
+    fontWeight: '500' as const,
+  },
+  logoutButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: Colors.background,
   },
   title: {
     fontSize: 32,
