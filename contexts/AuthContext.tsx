@@ -74,12 +74,46 @@ export const [AuthProvider, useAuth] = createContextHook((): AuthContextType => 
 
   const register = useCallback(async (name: string, email: string, oab: string, password: string): Promise<{ success: boolean; message: string }> => {
     try {
-      if (!name || !email || !oab || !password) {
+      if (!name?.trim() || !email?.trim() || !oab?.trim() || !password) {
         return { success: false, message: 'Todos os campos são obrigatórios' };
       }
 
-      if (password.length < 6) {
-        return { success: false, message: 'A senha deve ter pelo menos 6 caracteres' };
+      if (name.trim().length < 3) {
+        return { success: false, message: 'Nome deve ter pelo menos 3 caracteres' };
+      }
+
+      if (!/^[a-zA-ZÀ-ÿ\s]+$/.test(name)) {
+        return { success: false, message: 'Nome deve conter apenas letras' };
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return { success: false, message: 'Email inválido' };
+      }
+
+      const oabRegex = /^OAB\/[A-Z]{2}\s?\d{3,6}$/i;
+      if (!oabRegex.test(oab)) {
+        return { success: false, message: 'Formato de OAB inválido (ex: OAB/SP 123456)' };
+      }
+
+      if (password.length < 8) {
+        return { success: false, message: 'A senha deve ter pelo menos 8 caracteres' };
+      }
+
+      if (!/[A-Z]/.test(password)) {
+        return { success: false, message: 'A senha deve conter pelo menos uma letra maiúscula' };
+      }
+
+      if (!/[a-z]/.test(password)) {
+        return { success: false, message: 'A senha deve conter pelo menos uma letra minúscula' };
+      }
+
+      if (!/[0-9]/.test(password)) {
+        return { success: false, message: 'A senha deve conter pelo menos um número' };
+      }
+
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        return { success: false, message: 'A senha deve conter pelo menos um caractere especial' };
       }
 
       const usersStr = await AsyncStorage.getItem(USERS_STORAGE_KEY);
@@ -92,16 +126,16 @@ export const [AuthProvider, useAuth] = createContextHook((): AuthContextType => 
 
       const newUser: User = {
         id: Date.now().toString(),
-        name,
-        email: email.toLowerCase(),
-        oab,
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        oab: oab.trim(),
         password,
       };
 
       users.push(newUser);
       await AsyncStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
 
-      return { success: true, message: 'Usuário criado com sucesso' };
+      return { success: true, message: 'Usuário criado com sucesso! Faça login para continuar.' };
     } catch (error) {
       console.error('Erro no registro:', error);
       return { success: false, message: 'Erro ao criar usuário' };

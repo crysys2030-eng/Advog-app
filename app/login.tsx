@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -23,7 +23,9 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [oab, setOab] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
   const { login, register } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -49,9 +51,71 @@ export default function LoginScreen() {
     }
   };
 
+  const validateName = (name: string): string | null => {
+    if (!name.trim()) return 'Nome é obrigatório';
+    if (name.trim().length < 3) return 'Nome deve ter pelo menos 3 caracteres';
+    if (!/^[a-zA-ZÀ-ÿ\s]+$/.test(name)) return 'Nome deve conter apenas letras';
+    return null;
+  };
+
+  const validateEmail = (email: string): string | null => {
+    if (!email.trim()) return 'Email é obrigatório';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return 'Email inválido';
+    return null;
+  };
+
+  const validateOAB = (oab: string): string | null => {
+    if (!oab.trim()) return 'OAB é obrigatória';
+    const oabRegex = /^OAB\/[A-Z]{2}\s?\d{3,6}$/i;
+    if (!oabRegex.test(oab)) return 'Formato inválido (ex: OAB/SP 123456)';
+    return null;
+  };
+
+  const validatePassword = (password: string): string | null => {
+    if (!password) return 'Senha é obrigatória';
+    if (password.length < 8) return 'Senha deve ter pelo menos 8 caracteres';
+    if (!/[A-Z]/.test(password)) return 'Senha deve conter pelo menos uma letra maiúscula';
+    if (!/[a-z]/.test(password)) return 'Senha deve conter pelo menos uma letra minúscula';
+    if (!/[0-9]/.test(password)) return 'Senha deve conter pelo menos um número';
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return 'Senha deve conter pelo menos um caractere especial';
+    return null;
+  };
+
+  const validateConfirmPassword = (password: string, confirmPassword: string): string | null => {
+    if (!confirmPassword) return 'Confirme sua senha';
+    if (password !== confirmPassword) return 'Senhas não coincidem';
+    return null;
+  };
+
+  useEffect(() => {
+    if (!isRegisterMode) {
+      setErrors({});
+    }
+  }, [isRegisterMode]);
+
   const handleRegister = async () => {
-    if (!name || !email || !oab || !password) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos');
+    const newErrors: {[key: string]: string} = {};
+
+    const nameError = validateName(name);
+    if (nameError) newErrors.name = nameError;
+
+    const emailError = validateEmail(email);
+    if (emailError) newErrors.email = emailError;
+
+    const oabError = validateOAB(oab);
+    if (oabError) newErrors.oab = oabError;
+
+    const passwordError = validatePassword(password);
+    if (passwordError) newErrors.password = passwordError;
+
+    const confirmPasswordError = validateConfirmPassword(password, confirmPassword);
+    if (confirmPasswordError) newErrors.confirmPassword = confirmPasswordError;
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      Alert.alert('Erro de Validação', 'Por favor, corrija os erros no formulário');
       return;
     }
 
@@ -65,7 +129,11 @@ export default function LoginScreen() {
             onPress: () => {
               setIsRegisterMode(false);
               setName('');
+              setEmail('');
+              setPassword('');
               setOab('');
+              setConfirmPassword('');
+              setErrors({});
             },
           },
         ]);
@@ -85,6 +153,8 @@ export default function LoginScreen() {
     setPassword('');
     setName('');
     setOab('');
+    setConfirmPassword('');
+    setErrors({});
   };
 
   return (
@@ -130,58 +200,118 @@ export default function LoginScreen() {
 
             {isRegisterMode && (
               <>
-                <View style={styles.inputContainer}>
-                  <User size={20} color="#94a3b8" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Nome completo"
-                    placeholderTextColor="#64748b"
-                    value={name}
-                    onChangeText={setName}
-                    autoCapitalize="words"
-                  />
+                <View>
+                  <View style={[styles.inputContainer, errors.name && styles.inputError]}>
+                    <User size={20} color="#94a3b8" style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Nome completo"
+                      placeholderTextColor="#64748b"
+                      value={name}
+                      onChangeText={(text) => {
+                        setName(text);
+                        if (errors.name) {
+                          const error = validateName(text);
+                          setErrors(prev => ({ ...prev, name: error || '' }));
+                        }
+                      }}
+                      autoCapitalize="words"
+                    />
+                  </View>
+                  {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
                 </View>
 
-                <View style={styles.inputContainer}>
-                  <Briefcase size={20} color="#94a3b8" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="OAB (ex: OAB/SP 123.456)"
-                    placeholderTextColor="#64748b"
-                    value={oab}
-                    onChangeText={setOab}
-                    autoCapitalize="characters"
-                  />
+                <View>
+                  <View style={[styles.inputContainer, errors.oab && styles.inputError]}>
+                    <Briefcase size={20} color="#94a3b8" style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="OAB (ex: OAB/SP 123456)"
+                      placeholderTextColor="#64748b"
+                      value={oab}
+                      onChangeText={(text) => {
+                        setOab(text);
+                        if (errors.oab) {
+                          const error = validateOAB(text);
+                          setErrors(prev => ({ ...prev, oab: error || '' }));
+                        }
+                      }}
+                      autoCapitalize="characters"
+                    />
+                  </View>
+                  {errors.oab && <Text style={styles.errorText}>{errors.oab}</Text>}
                 </View>
               </>
             )}
 
-            <View style={styles.inputContainer}>
-              <Mail size={20} color="#94a3b8" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                placeholderTextColor="#64748b"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-              />
+            <View>
+              <View style={[styles.inputContainer, errors.email && styles.inputError]}>
+                <Mail size={20} color="#94a3b8" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email"
+                  placeholderTextColor="#64748b"
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    if (errors.email) {
+                      const error = validateEmail(text);
+                      setErrors(prev => ({ ...prev, email: error || '' }));
+                    }
+                  }}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                />
+              </View>
+              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
             </View>
 
-            <View style={styles.inputContainer}>
-              <Lock size={20} color="#94a3b8" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={isRegisterMode ? "Senha (mínimo 6 caracteres)" : "Senha"}
-                placeholderTextColor="#64748b"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-              />
+            <View>
+              <View style={[styles.inputContainer, errors.password && styles.inputError]}>
+                <Lock size={20} color="#94a3b8" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder={isRegisterMode ? "Senha (mínimo 8 caracteres)" : "Senha"}
+                  placeholderTextColor="#64748b"
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    if (errors.password) {
+                      const error = validatePassword(text);
+                      setErrors(prev => ({ ...prev, password: error || '' }));
+                    }
+                  }}
+                  secureTextEntry
+                  autoCapitalize="none"
+                />
+              </View>
+              {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
             </View>
+
+            {isRegisterMode && (
+              <View>
+                <View style={[styles.inputContainer, errors.confirmPassword && styles.inputError]}>
+                  <Lock size={20} color="#94a3b8" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Confirmar senha"
+                    placeholderTextColor="#64748b"
+                    value={confirmPassword}
+                    onChangeText={(text) => {
+                      setConfirmPassword(text);
+                      if (errors.confirmPassword) {
+                        const error = validateConfirmPassword(password, text);
+                        setErrors(prev => ({ ...prev, confirmPassword: error || '' }));
+                      }
+                    }}
+                    secureTextEntry
+                    autoCapitalize="none"
+                  />
+                </View>
+                {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
+              </View>
+            )}
 
             <TouchableOpacity
               style={styles.loginButton}
@@ -353,5 +483,16 @@ const styles = StyleSheet.create({
   footerSubtext: {
     color: '#475569',
     fontSize: 12,
+  },
+  inputError: {
+    borderColor: '#ef4444',
+    borderWidth: 2,
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 12,
+    marginTop: -12,
+    marginBottom: 12,
+    marginLeft: 16,
   },
 });
