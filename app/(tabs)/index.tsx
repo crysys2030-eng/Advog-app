@@ -2,13 +2,14 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert } from "rea
 import { useCases, useUpcomingDeadlines } from "@/contexts/CaseContext";
 import Colors from "@/constants/colors";
 import { Briefcase, Clock, AlertTriangle, CheckCircle2, TrendingUp, LogOut, User } from "lucide-react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function DashboardScreen() {
   const { stats, cases } = useCases();
   const upcomingDeadlines = useUpcomingDeadlines(7);
   const { user, logout } = useAuth();
+  const router = useRouter();
 
   const handleLogout = () => {
     Alert.alert(
@@ -21,6 +22,7 @@ export default function DashboardScreen() {
           style: 'destructive',
           onPress: async () => {
             await logout();
+            router.replace('/login');
           },
         },
       ]
